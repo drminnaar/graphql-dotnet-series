@@ -11,7 +11,7 @@ using MyView.Api.Reviewers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// configure in-memory database
+// configure SQLite database
 builder
    .Services
    .AddDbContextFactory<AppDbContext>(options =>
