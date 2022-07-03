@@ -1,0 +1,20 @@
+$location = "australiaeast"
+
+# STEP 1 - create resource group
+$rgName = "myview-rg"
+az group create --name $rgName --location $location
+
+# STEP 2 - deploy template
+$aspName = "myview-asp"
+$appName = "myview-webapp-api"
+$deploymentName = "myview-deployment"
+
+az deployment group create `
+    --name $deploymentName `
+    --resource-group $rgName `
+    --template-file ./main.bicep `
+    --parameters appName=$appName `
+    --parameters aspName=$aspName
+
+# cleanup
+az group delete --resource-group $rgName -y

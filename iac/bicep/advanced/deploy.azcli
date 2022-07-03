@@ -1,0 +1,22 @@
+$location = "australiaeast"
+
+
+# STEP 1 - deploy template
+$deploymentName = "myview-deployment"
+
+az deployment sub create `
+    --name $deploymentName `
+    --location $location `
+    --template-file ./main.bicep `
+    --parameters location=$location
+
+
+# STEP 2 - get outputs from deployment
+az deployment sub show --name $deploymentName --query "properties.outputs"
+$hostName = $(az deployment sub show --name $deploymentName --query "properties.outputs.defaultHostName.value")
+$rgName = $(az deployment sub show --name $deploymentName --query "properties.outputs.resourceGroupName.value")
+echo $hostName, $rgName
+
+
+# STEP 3 - cleanup
+az group delete --resource-group $rgName -y

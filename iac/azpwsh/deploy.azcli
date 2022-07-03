@@ -1,0 +1,63 @@
+$location = "australiaeast"
+
+# STEP 1 - create resource group
+$rgName = "myview-rg"
+New-AzResourceGroup -Name $rgName -Location $location
+
+# STEP 2 - create appservice plan
+$aspName = "myview-asp"
+$appSku = "F1"
+New-AzAppServicePlan `
+    -Name $aspName `
+    -Location $location `
+    -ResourceGroupName $rgName `
+    -Tier $appSku `
+    -Linux
+
+# STEP 3 - create webapp
+$appName = "myview-webapp-api"
+New-AzWebApp `
+    -Name $appName `
+    -Location $location `
+    -AppServicePlan $aspName `
+    -ResourceGroupName $rgName
+
+# STEP 4 - configure webapp
+
+## At this point, the webapp is not using .NET v6 as is required.
+## This can be verified by the following commands
+az webapp config show `
+    --resource-group $rgName `
+    --name $appName `
+    --query netFrameworkVersion
+
+Get-AzWebApp `
+    -Name $appName `
+    -ResourceGroupName $rgName `
+    | Select-Object -ExpandProperty SiteConfig `
+    | Select-Object -Property NetFrameworkVersion
+
+Get-AzWebApp `
+    -Name $appName `
+    -ResourceGroupName $rgName `
+    | ConvertTo-Json `
+    | jq ".SiteConfig.NetFrameworkVersion"
+
+## lets configure the webapp with the correct version of .NET
+Set-AzWebApp `
+    -Name $appName `
+    -ResourceGroupName $rgName `
+    -AppServicePlan $aspName `
+    -NetFrameworkVersion 'v6.0'
+
+$apiVersion = "2020-06-01"
+$config = Get-AzResource `
+    -ResourceGroupName $rgName `
+    -ResourceType Microsoft.Web/sites/config `
+    -ResourceName $appName/web `
+    -ApiVersion $apiVersion
+$config.Properties.linuxFxVersion = "DOTNETCORE|6.0"
+$config | Set-AzResource -ApiVersion $apiVersion -Force
+
+# cleanup
+Remove-AzResourceGroup -Name $rgName -Force

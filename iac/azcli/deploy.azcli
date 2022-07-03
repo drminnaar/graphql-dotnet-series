@@ -1,0 +1,27 @@
+$location = "australiaeast"
+
+# STEP 1 - create resource group
+$rgName = "myview-rg"
+az group create `
+    --name $rgName `
+    --location $location
+
+# STEP 2 - create appservice plan
+$aspName = "myview-asp"
+$appSku = "F1"
+az appservice plan create `
+    --name $aspName `
+    --resource-group $rgName `
+    --sku $appSku `
+    --is-linux
+
+# STEP 3 - create webapp
+$appName = "myview-webapp-api"
+$webapp = az webapp create `
+    --name $appName `
+    --resource-group $rgName `
+    --plan $aspName `
+    --runtime '"DOTNETCORE|6.0"'
+
+# STEP 4 - cleanup
+az group delete --resource-group $rgName -y
