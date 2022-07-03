@@ -8,7 +8,7 @@ using MyView.Api.Games;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<AbstractValidator<GameReviewDto>, GameReviewValidator>();
+builder.Services.AddTransient<AbstractValidator<GameReviewDto>, GameReviewValidator>();
 
 // configure GraphQL service
 builder
